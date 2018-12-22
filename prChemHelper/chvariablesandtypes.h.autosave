@@ -1,0 +1,67 @@
+#ifndef CHVARIABLESANDTYPES_H
+#define CHVARIABLESANDTYPES_H
+
+#include <cstring>
+
+class TElement;
+class TPosition;
+
+class TElement: public System::TObject {
+  friend class TPosition;
+  public:
+  SmallString<3> Formula;
+  Char DegreeOfOxidation [ 17/*# range -8..8*/ ];
+  SmallString<15> Name;
+  int Quantity;
+  public:
+  __fastcall TElement();
+};
+
+
+typedef DynamicArray< TElement* > TElementArray;
+typedef DynamicArray< String > TStringArray;
+
+class TPosition: public System::TObject {
+  friend class TElement;
+  public:
+  int Left;
+  int Top;
+  public:
+  __fastcall TPosition();
+};
+
+
+
+extern int PrevTime;
+extern int TimeEditAnimationStart;
+extern int TimeEditInverseAnimationStart;
+extern int TimeAllAnimationStart;
+extern int TimeAllInverseAnimationStart;
+extern double CurrentAccelerationCoefficient, CurrentSpeed;
+extern double EditLeftAcceleration, EditTopAcceleration;
+extern double SGAcceleration;
+extern double EditLineAcceleration;
+extern double ImageLeftAcceleration, ImageTopAcceleration;
+extern TPosition* EditStartPosition,* EditFinishPosition;
+extern TPosition* ImageStartPosition,* ImageFinishPosition;
+extern TPosition* SGBottomStartPosition,* SGBottomFinishPosition;
+extern bool EditAnimationRunning;
+extern bool EditInverseAnimationRunning;
+extern bool AllAnimationRunning;
+extern bool AllInverseAnimationRunning;
+extern bool WasEditAnimation;
+extern bool WasAllAnimation;
+extern bool WasChangedInputFormula;
+extern bool WasJustCreated;
+extern TElementArray ElementList;
+extern string ExceptionList;
+extern string PathToBrowser;
+extern TStringArray CiteArray;
+extern int EditAnimationTime;
+extern int AllAnimationTime;
+extern double StartAcceleration;
+extern int StartSpeed;
+void __fastcall InitializeVariables( );
+
+
+#endif // CHVARIABLESANDTYPES_H

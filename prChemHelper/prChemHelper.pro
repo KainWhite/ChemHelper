@@ -5,6 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
+QT       += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -26,10 +27,16 @@ CONFIG += c++11
 
 SOURCES += \
         main.cpp \
-        chemhelper.cpp
+        chemhelper.cpp \
+    ch_variables_and_types.cpp \
+    ch_graphics.cpp \
+    ch_model.cpp
 
 HEADERS += \
-        chemhelper.h
+        chemhelper.h \
+    ch_graphics.h \
+    ch_variables_and_types.h \
+    ch_model.h
 
 FORMS += \
         chemhelper.ui

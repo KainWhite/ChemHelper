@@ -3,8 +3,9 @@
 
 #include <QMainWindow>
 
-namespace Ui {
-class ChemHelper;
+namespace Ui
+{
+    class ChemHelper;
 }
 
 class ChemHelper : public QMainWindow
@@ -14,6 +15,12 @@ class ChemHelper : public QMainWindow
 public:
     explicit ChemHelper(QWidget *parent = nullptr);
     ~ChemHelper();
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
+
+private slots:
+    void on_btnSearch_clicked();
 
 private:
     Ui::ChemHelper *ui;

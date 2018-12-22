@@ -1,5 +1,6 @@
-#include "chemhelper.h"
 #include <QApplication>
+
+#include "chemhelper.h"
 
 int main(int argc, char *argv[])
 {
