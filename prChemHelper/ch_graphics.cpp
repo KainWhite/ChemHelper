@@ -4,135 +4,128 @@
 #include "ch_variables_and_types.h"
 
 
-int SysTimeToInt(SYSTEMTIME x)
-{
-    return ((x.wHour * 60 + x.wMinute) * 60 + x.wSecond) * 1000 + x.wMilliseconds;
-}
-
-void LaunchEditAnimation()
+void launchGEditAnimation()
 {
     SYSTEMTIME UTC;
-    if (!WasEditAnimation)
+    if (!WasGEditAnimation)
     {
         GetSystemTime(&UTC);
-        EditAnimationRunning = true;
-        TimeEditAnimationStart = SysTimeToInt(UTC);
-        WasEditAnimation = true;
+        GEditAnimationRunning = true;
+        TimeGEditAnimationStart = sysTimeToInt(UTC);
+        WasGEditAnimation = true;
     }
 }
-void LaunchEditInverseAnimation()
+void launchGEditInverseAnimation()
 {
     SYSTEMTIME UTC;
-    if (WasEditAnimation)
+    if (WasGEditAnimation)
     {
         GetSystemTime(&UTC);
-        EditInverseAnimationRunning = true;
-        TimeEditInverseAnimationStart = SysTimeToInt(UTC);
-        WasEditAnimation = false;
+        GEditInverseAnimationRunning = true;
+        TimeGEditInverseAnimationStart = sysTimeToInt(UTC);
+        WasGEditAnimation = false;
         //Form1.FocusControl(NULL);
     }
 }
 
-void LaunchAllAnimation()
+void launchAllAnimation()
 {
     SYSTEMTIME UTC;
     if (!WasAllAnimation)
     {
         GetSystemTime(&UTC);
         AllAnimationRunning = true;
-        TimeAllAnimationStart = SysTimeToInt(UTC);
+        TimeAllAnimationStart = sysTimeToInt(UTC);
         WasAllAnimation = true;
     }
 }
-void LaunchAllInverseAnimation()
+void launchAllInverseAnimation()
 {
     SYSTEMTIME UTC;
     if (WasAllAnimation)
     {
         GetSystemTime(&UTC);
         AllInverseAnimationRunning = true;
-        TimeAllInverseAnimationStart = SysTimeToInt(UTC);
+        TimeAllInverseAnimationStart = sysTimeToInt(UTC);
         WasAllAnimation = false;
     }
 }
 
-/*void SetEditFinishPosition(QLineEdit )
+void setGEditFinishPosition(QGraphicsView &Underscore)
 {
-    shpLine.Left = edtInputFormula.Left;
-    shpLine.Width = edtInputFormula.Width;
+    Underscore.setGeometry(0, 0, EdtInputFormulaWidth, 4);
 }
 
-void SetEditStartPosition()
+void setGEditStartPosition(QGraphicsView &Underscore)
 {
-    shpLine.Left = edtInputFormula.Left + edtInputFormula.Width div 2;
-    shpLine.Width = 0;
+    Underscore.setGeometry(0, 0, 0, 4);
 }
 
-void Redraw()
+void setAllFinishPosition(QWidget &GEdit, QLabel &Logo)
 {
-  SYSTEMTIME UTC;
-  int Now = 0;
-  GetSystemTime(&UTC);
-  Now = SysTimeToInt(UTC);
-  //# with Form1 do
-  {
-    if ( EditAnimationRunning )
-        if ( Now - TimeEditAnimationStart <= EditAnimationTime / 2 )
-            shpLine.Left = edtInputFormula.Left + edtInputFormula.Width / 2 - EditLineAcceleration * Sqr( Now - TimeEditAnimationStart ) / 2;
+    GEdit.move(GEditFinishPosition.left, GEditFinishPosition.top);
+    Logo.move(LogoFinishPosition.left, GEditFinishPosition.top);
+}
+void setAllStartPosition(QWidget &GEdit, QLabel &Logo)
+{
+    GEdit.move(GEditStartPosition.left, GEditStartPosition.top);
+    Logo.move(LogoStartPosition.left, LogoStartPosition.top);
+}
+
+void redraw(QWidget &GEdit, QGraphicsView &Underscore, QLabel &Logo)
+{
+    SYSTEMTIME UTC;
+    int now = 0;
+    GetSystemTime(&UTC);
+    now = sysTimeToInt(UTC);
+    if (GEditAnimationRunning)
+        if (now - TimeGEditAnimationStart <= GEditAnimationTime / 2)
+            Underscore.setGeometry(0, 0, GEditUnderscoreAcceleration * sqr(now - TimeGEditAnimationStart ), 4);
         else
-            shpLine.Left = edtInputFormula.Left + EditLineAcceleration * Sqr( TimeEditAnimationStart + EditAnimationTime - Now ) / 2;
-    if ( EditInverseAnimationRunning )
-        if ( Now - TimeEditInverseAnimationStart < EditAnimationTime / 2 )
-            shpLine.Left = edtInputFormula.Left + EditLineAcceleration * Sqr( Now - TimeEditInverseAnimationStart ) / 2;
+            Underscore.setGeometry(0, 0, EdtInputFormulaWidth - GEditUnderscoreAcceleration * sqr(TimeGEditAnimationStart + GEditAnimationTime - now), 4);
+    if (GEditInverseAnimationRunning)
+        if (now - TimeGEditInverseAnimationStart < GEditAnimationTime / 2)
+            Underscore.setGeometry(0, 0, EdtInputFormulaWidth - GEditUnderscoreAcceleration * sqr(now - TimeGEditInverseAnimationStart ), 4);
         else
-            shpLine.Left = edtInputFormula.Left + edtInputFormula.Width / 2 - EditLineAcceleration * Sqr( TimeEditInverseAnimationStart + EditAnimationTime - Now ) / 2;
-    if ( AllAnimationRunning )
-        if ( Now - TimeAllAnimationStart <= AllAnimationTime / 2 )
+            Underscore.setGeometry(0, 0, GEditUnderscoreAcceleration * sqr(TimeGEditInverseAnimationStart + GEditAnimationTime - now ), 4);
+    if (AllAnimationRunning)
+        if (now - TimeAllAnimationStart <= AllAnimationTime / 2)
         {
-            edtInputFormula.Left = EditStartPosition.Left + EditLeftAcceleration * Sqr( Now - TimeAllAnimationStart ) / 2;
-            edtInputFormula.Top = EditStartPosition.Top + EditTopAcceleration * Sqr( Now - TimeAllAnimationStart ) / 2;
-            shpLine.Left = edtInputFormula.Left;
-            strngrdSearchResults.Height = SGAcceleration * Sqr( Now - TimeAllAnimationStart ) / 2;
-            imgHeader.Left = ImageStartPosition.Left + ImageLeftAcceleration * Sqr( Now - TimeAllAnimationStart ) / 2;
-            imgHeader.Top = ImageStartPosition.Top + ImageTopAcceleration * Sqr( Now - TimeAllAnimationStart ) / 2;
+            GEdit.move(GEditStartPosition.left + GEditLeftAcceleration * sqr(now - TimeAllAnimationStart) / 2,
+                       GEditStartPosition.top + GEditTopAcceleration * sqr(now - TimeAllAnimationStart) / 2);
+            //strngrdSearchResults.Height = SGAcceleration * Sqr( Now - TimeAllAnimationStart ) / 2;
+            Logo.move(LogoStartPosition.left + LogoLeftAcceleration * sqr(now - TimeAllAnimationStart) / 2,
+                      LogoStartPosition.top + LogoTopAcceleration * sqr(now - TimeAllAnimationStart) / 2);
         }
         else
         {
-            edtInputFormula.Left = EditFinishPosition.Left - EditLeftAcceleration * Sqr( TimeAllAnimationStart + AllAnimationTime - Now ) / 2;
-            edtInputFormula.Top = EditFinishPosition.Top - EditTopAcceleration * Sqr( TimeAllAnimationStart + AllAnimationTime - Now ) / 2;
-            shpLine.Left = edtInputFormula.Left;
-            strngrdSearchResults.Height = SGBottomFinishPosition.Top - SGBottomStartPosition.Top - SGAcceleration * Sqr( TimeAllAnimationStart + AllAnimationTime - Now ) / 2;
-            imgHeader.Left = ImageFinishPosition.Left - ImageLeftAcceleration * Sqr( TimeAllAnimationStart + AllAnimationTime - Now ) / 2;
-            imgHeader.Top = ImageFinishPosition.Top - ImageTopAcceleration * Sqr( TimeAllAnimationStart + AllAnimationTime - Now ) / 2;
+            GEdit.move(GEditFinishPosition.left - GEditLeftAcceleration * sqr(TimeAllAnimationStart + AllAnimationTime - now) / 2,
+                       GEditFinishPosition.top - GEditTopAcceleration * sqr(TimeAllAnimationStart + AllAnimationTime - now) / 2);
+            //strngrdSearchResults.Height = SGBottomFinishPosition.Top - SGBottomStartPosition.Top - SGAcceleration * Sqr( TimeAllAnimationStart + AllAnimationTime - Now ) / 2;
+            Logo.move(LogoFinishPosition.left - LogoLeftAcceleration * sqr(TimeAllAnimationStart + AllAnimationTime - now) / 2,
+                      LogoFinishPosition.top - LogoTopAcceleration * sqr(TimeAllAnimationStart + AllAnimationTime - now) / 2);
         }
-    if ( AllInverseAnimationRunning )
-        if ( Now - TimeAllInverseAnimationStart <= AllAnimationTime / 2 )
+    if (AllInverseAnimationRunning)
+        if (now - TimeAllInverseAnimationStart <= AllAnimationTime / 2)
         {
-            edtInputFormula.Left = EditFinishPosition.Left + EditLeftAcceleration * Sqr( Now - TimeAllInverseAnimationStart ) / 2;
-            edtInputFormula.Top = EditFinishPosition.Top + EditTopAcceleration * Sqr( Now - TimeAllInverseAnimationStart ) / 2;
-            shpLine.Left = edtInputFormula.Left;
-            strngrdSearchResults.Height = SGBottomFinishPosition.Top - SGBottomStartPosition.Top - SGAcceleration * Sqr( Now - TimeAllInverseAnimationStart ) / 2;
-            imgHeader.Left = ImageStartPosition.Left + ImageLeftAcceleration * Sqr( Now - TimeAllInverseAnimationStart ) / 2;
-            imgHeader.Top = ImageStartPosition.Top + ImageTopAcceleration ) * Sqr( Now - TimeAllInverseAnimationStart ) / 2;
+            GEdit.move(GEditFinishPosition.left + GEditLeftAcceleration * sqr(now - TimeAllInverseAnimationStart) / 2,
+                       GEditFinishPosition.top + GEditTopAcceleration * sqr(now - TimeAllInverseAnimationStart) / 2);
+            //strngrdSearchResults.Height = SGBottomFinishPosition.Top - SGBottomStartPosition.Top - SGAcceleration * Sqr( Now - TimeAllInverseAnimationStart ) / 2;
+            Logo.move(LogoStartPosition.left + LogoLeftAcceleration * sqr(now - TimeAllInverseAnimationStart) / 2,
+                      LogoStartPosition.top + LogoTopAcceleration * sqr(now - TimeAllInverseAnimationStart) / 2);
         }
         else
         {
-            edtInputFormula.Left = EditFinishPosition.Left - EditLeftAcceleration * Sqr( TimeAllInverseAnimationStart + AllAnimationTime - Now ) / 2;
-            edtInputFormula.Top = EditFinishPosition.Top - EditTopAcceleration * Sqr( TimeAllInverseAnimationStart + AllAnimationTime - Now ) / 2;
-            shpLine.Left = edtInputFormula.Left;
-            strngrdSearchResults.Height = - SGAcceleration * Sqr( TimeAllInverseAnimationStart + AllAnimationTime - Now ) / 2;
-            imgHeader.Left = ImageFinishPosition.Left - ImageLeftAcceleration * Sqr( TimeAllInverseAnimationStart + AllAnimationTime - Now ) / 2;
-            imgHeader.Top = ImageFinishPosition.Top - ImageTopAcceleration * Sqr( TimeAllInverseAnimationStart + AllAnimationTime - Now ) / 2;
+            GEdit.move(GEditFinishPosition.left - GEditLeftAcceleration * sqr(TimeAllInverseAnimationStart + AllAnimationTime - now) / 2,
+                       GEditFinishPosition.top - GEditTopAcceleration * sqr(TimeAllInverseAnimationStart + AllAnimationTime - now) / 2);
+            //strngrdSearchResults.Height = - SGAcceleration * Sqr( TimeAllInverseAnimationStart + AllAnimationTime - Now ) / 2;
+            Logo.move(LogoFinishPosition.left - LogoLeftAcceleration * sqr(TimeAllInverseAnimationStart + AllAnimationTime - now) / 2,
+                      LogoFinishPosition.top - LogoTopAcceleration * sqr(TimeAllInverseAnimationStart + AllAnimationTime - now) / 2);
         }
-    shpLine.Width = edtInputFormula.Width - 2 * ( shpLine.Left - edtInputFormula.Left );
-    shpLine.Top = edtInputFormula.Top + edtInputFormula.Height;
-    imgSearchButton.Left = edtInputFormula.Left + edtInputFormula.Width + 10;
-    imgSearchButton.Top = edtInputFormula.Top;
-    }
 }
 
 
-void ShowMessageInvalidInputFormula()
+/*void ShowMessageInvalidInputFormula()
 {
   //# with Form1 do
   {

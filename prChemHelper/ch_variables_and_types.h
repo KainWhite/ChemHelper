@@ -4,9 +4,12 @@
 #include <string>
 #include <vector>
 #include <QLabel>
+#include <windows.h>
 
 void initializeVariables( );
 std::wstring stringToWString(std::string str);
+int sysTimeToInt(SYSTEMTIME x);
+int sqr(int a);
 
 class chemElement
 {
@@ -39,8 +42,8 @@ class QClickableLabel : public QLabel
 {
     Q_OBJECT
 public:
-    QClickableLabel() {}
-    QClickableLabel(QString text, QWidget *parent = 0) : QLabel(text, parent) {}
+    QClickableLabel(QWidget *parent = nullptr) : QLabel(parent) {}
+    QClickableLabel(QString text, QWidget *parent = nullptr) : QLabel(text, parent) {}
     ~QClickableLabel() {}
 
 signals:
@@ -50,33 +53,21 @@ protected:
     void mousePressEvent(QMouseEvent *event) { emit clicked(); }
 };
 
-class QShape : public QWidget, public QRect
-{
-    Q_OBJECT
-};
-
-/*class pageHandler : public QObject
-{
-    Q_OBJECT
-public slots:
-    void showProgress(qint64 bytesReceived, qint64 bytesTotal);
-};*/
-
 extern int PrevTime;
-extern int TimeEditAnimationStart;
-extern int TimeEditInverseAnimationStart;
+extern int TimeGEditAnimationStart;
+extern int TimeGEditInverseAnimationStart;
 extern int TimeAllAnimationStart;
 extern int TimeAllInverseAnimationStart;
 
-extern position EditStartPosition, EditFinishPosition;
-extern position ImageStartPosition, ImageFinishPosition;
+extern position GEditStartPosition, GEditFinishPosition;
+extern position LogoStartPosition, LogoFinishPosition;
 extern position SGBottomStartPosition, SGBottomFinishPosition;
 
-extern bool EditAnimationRunning;
-extern bool EditInverseAnimationRunning;
+extern bool GEditAnimationRunning;
+extern bool GEditInverseAnimationRunning;
 extern bool AllAnimationRunning;
 extern bool AllInverseAnimationRunning;
-extern bool WasEditAnimation;
+extern bool WasGEditAnimation;
 extern bool WasAllAnimation;
 extern bool WasChangedInputFormula;
 extern bool WasJustCreated;
@@ -87,18 +78,22 @@ extern std::string PathToBrowser;
 extern std::vector<std::string> CiteArray;
 
 extern const double CurrentAccelerationCoefficient, CurrentSpeed;
-extern const double EditLeftAcceleration, EditTopAcceleration;
+extern const double GEditLeftAcceleration, GEditTopAcceleration;
 extern const double SGAcceleration;
-extern const double EditLineAcceleration;
-extern const double ImageLeftAcceleration, ImageTopAcceleration;
-extern const int EditAnimationTime;
+extern const double GEditUnderscoreAcceleration;
+extern const double LogoLeftAcceleration, LogoTopAcceleration;
+extern const int GEditAnimationTime;
 extern const int AllAnimationTime;
 extern const double StartAcceleration;
 extern const int StartSpeed;
 
 extern int MonitorHeight;
 extern int MonitorWidth;
+extern const int EdtInputFormulaWidth;
 
 extern int HWbtnSearch;
+
+extern const QColor UnderscoreCorrectColor;
+extern const QColor UnderscoreWrongColor;
 
 #endif // CHVARIABLESANDTYPES_H

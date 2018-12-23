@@ -1,24 +1,26 @@
 #include <fstream>
 
 #include "ch_variables_and_types.h"
+#include "chemhelper.h"
+#include "ui_chemhelper.h"
 
 using namespace std;
 
 int PrevTime = 0;
-int TimeEditAnimationStart = 0;
-int TimeEditInverseAnimationStart = 0;
+int TimeGEditAnimationStart = 0;
+int TimeGEditInverseAnimationStart = 0;
 int TimeAllAnimationStart = 0;
 int TimeAllInverseAnimationStart = 0;
 
-position EditStartPosition, EditFinishPosition;
-position ImageStartPosition, ImageFinishPosition;
+position GEditStartPosition, GEditFinishPosition;
+position LogoStartPosition, LogoFinishPosition;
 position SGBottomStartPosition, SGBottomFinishPosition;
 
-bool EditAnimationRunning = false;
-bool EditInverseAnimationRunning = false;
+bool GEditAnimationRunning = false;
+bool GEditInverseAnimationRunning = false;
 bool AllAnimationRunning = false;
 bool AllInverseAnimationRunning = false;
-bool WasEditAnimation = false;
+bool WasGEditAnimation = false;
 bool WasAllAnimation = false;
 bool WasChangedInputFormula = false;
 bool WasJustCreated = true;
@@ -29,19 +31,23 @@ string PathToBrowser;
 vector<string> CiteArray;
 
 const double CurrentAccelerationCoefficient = 0.0, CurrentSpeed = 0.0;
-const double EditLeftAcceleration = 0.0, EditTopAcceleration = 0.0;
+const double GEditLeftAcceleration = 0.0, GEditTopAcceleration = 0.0;
 const double SGAcceleration = 0.0;
-const double EditLineAcceleration = 0.0;
-const double ImageLeftAcceleration = 0.0, ImageTopAcceleration = 0.0;
-const int EditAnimationTime = 300;
+const double GEditLineAcceleration = 0.0;
+const double LogoLeftAcceleration = 0.0, LogoTopAcceleration = 0.0;
+const int GEditAnimationTime = 300;
 const int AllAnimationTime = 500;
 const double StartAcceleration = 1;
 const int StartSpeed = 0;
 
 int MonitorHeight;
 int MonitorWidth;
+const int EdtInputFormulaWidth = 380;
 
 int HWbtnSearch;
+
+const QColor UnderscoreCorrectColor(102, 102, 255);
+const QColor UnderscoreWrongColor(255, 20, 20);
 
 // CLASS_METHODS :
 
@@ -169,4 +175,14 @@ string GetStringFromFile(string path)
 wstring stringToWString(string str)
 {
     return wstring(str.begin(), str.end());
+}
+
+int SysTimeToInt(SYSTEMTIME x)
+{
+    return ((x.wHour * 60 + x.wMinute) * 60 + x.wSecond) * 1000 + x.wMilliseconds;
+}
+
+int sqr(int a)
+{
+    return a * a;
 }

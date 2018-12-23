@@ -1,4 +1,3 @@
-#include <string>
 #include <sstream>
 #include <stack>
 #include <QNetworkAccessManager>
@@ -7,6 +6,7 @@
 
 #include "ch_model.h"
 #include "ch_variables_and_types.h"
+#include "ch_graphics.h"
 
 using namespace std;
 
@@ -210,7 +210,7 @@ begin
 end;*/
 
 
-string GetHtmlPageGoogleSearch(string request)
+string getHtmlPageGoogleSearch(string request)
 {
     QNetworkAccessManager nam;
     QNetworkReply *reply = nam.get(QNetworkRequest(QUrl(QString::fromStdString("https://www.google.com/search?q=" + request))));
@@ -220,6 +220,44 @@ string GetHtmlPageGoogleSearch(string request)
     return (reply->readAll()).toStdString();
 }
 
+void gEditFocusIn(QTextEdit &edtInputFormula)
+{
+    launchGEditAnimation();
+    if(edtInputFormula.toPlainText().toStdString() == "Ваша формула")
+        edtInputFormula.setText("");
+}
+
+void gEditFocusOut(QTextEdit &edtInputFormula)
+{
+    launchGEditInverseAnimation();
+    if(edtInputFormula.toPlainText().toStdString() == "")
+        edtInputFormula.setText("Ваша формула");
+}
+
+void gEditAnimationFinished()
+{
+    GEditAnimationRunning = false;
+    setGEditFinishPosition();
+}
+void gEditInverseAnimationFinished()
+{
+    GEditInverseAnimationRunning = false;
+    setGEditStartPosition();
+}
+void allAnimationFinished()
+{
+    AllAnimationRunning = false;
+    setAllFinishPosition();
+}
+void allInverseAnimationFinished()
+{
+    AllInverseAnimationRunning = false;
+    setAllStartPosition();
+}
+void needRedraw()
+{
+    redraw();
+}
 
 /*String __fastcall BackNSymbols( int i, int n, String someStr )
 {

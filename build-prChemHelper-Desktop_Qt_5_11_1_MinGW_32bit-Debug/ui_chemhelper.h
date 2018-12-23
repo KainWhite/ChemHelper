@@ -12,13 +12,13 @@
 #include <QtCore/QVariant>
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QFrame>
+#include <QtWidgets/QGraphicsView>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
-#include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
 #include <QtWidgets/QMenuBar>
+#include <QtWidgets/QTextEdit>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
@@ -28,13 +28,12 @@ class Ui_ChemHelper
 {
 public:
     QWidget *centralWidget;
-    QFrame *lnDownloadStatus;
+    QWidget *wdgtGEdit;
+    QHBoxLayout *ltGEB;
+    QVBoxLayout *ltGEdit;
+    QTextEdit *edtInputFormula;
+    QGraphicsView *gviewUnderscore;
     QLabel *label;
-    QWidget *widget;
-    QHBoxLayout *ltGoogleEdit;
-    QVBoxLayout *verticalLayout;
-    QLineEdit *edtInputFormula;
-    QLabel *label_2;
     QMenuBar *menuBar;
     QMenu *menuHelp;
 
@@ -50,67 +49,81 @@ public:
         ChemHelper->setTabShape(QTabWidget::Rounded);
         centralWidget = new QWidget(ChemHelper);
         centralWidget->setObjectName(QStringLiteral("centralWidget"));
-        lnDownloadStatus = new QFrame(centralWidget);
-        lnDownloadStatus->setObjectName(QStringLiteral("lnDownloadStatus"));
-        lnDownloadStatus->setGeometry(QRect(320, 390, 151, 16));
-        QPalette palette;
-        QBrush brush(QColor(255, 255, 255, 255));
-        brush.setStyle(Qt::SolidPattern);
-        palette.setBrush(QPalette::Active, QPalette::Button, brush);
-        palette.setBrush(QPalette::Active, QPalette::Base, brush);
-        palette.setBrush(QPalette::Active, QPalette::Window, brush);
-        palette.setBrush(QPalette::Inactive, QPalette::Button, brush);
-        palette.setBrush(QPalette::Inactive, QPalette::Base, brush);
-        palette.setBrush(QPalette::Inactive, QPalette::Window, brush);
-        palette.setBrush(QPalette::Disabled, QPalette::Button, brush);
-        palette.setBrush(QPalette::Disabled, QPalette::Base, brush);
-        palette.setBrush(QPalette::Disabled, QPalette::Window, brush);
-        lnDownloadStatus->setPalette(palette);
-        lnDownloadStatus->setFrameShape(QFrame::HLine);
-        lnDownloadStatus->setFrameShadow(QFrame::Sunken);
-        label = new QLabel(centralWidget);
-        label->setObjectName(QStringLiteral("label"));
-        label->setGeometry(QRect(680, 240, 121, 121));
-        QSizePolicy sizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred);
+        wdgtGEdit = new QWidget(centralWidget);
+        wdgtGEdit->setObjectName(QStringLiteral("wdgtGEdit"));
+        wdgtGEdit->setGeometry(QRect(270, 240, 404, 58));
+        ltGEB = new QHBoxLayout(wdgtGEdit);
+        ltGEB->setSpacing(7);
+        ltGEB->setContentsMargins(11, 11, 11, 11);
+        ltGEB->setObjectName(QStringLiteral("ltGEB"));
+        ltGEB->setSizeConstraint(QLayout::SetMinimumSize);
+        ltGEdit = new QVBoxLayout();
+        ltGEdit->setSpacing(0);
+        ltGEdit->setObjectName(QStringLiteral("ltGEdit"));
+        ltGEdit->setSizeConstraint(QLayout::SetMinimumSize);
+        edtInputFormula = new QTextEdit(wdgtGEdit);
+        edtInputFormula->setObjectName(QStringLiteral("edtInputFormula"));
+        QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         sizePolicy.setHorizontalStretch(0);
         sizePolicy.setVerticalStretch(0);
-        sizePolicy.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
-        label->setSizePolicy(sizePolicy);
-        label->setPixmap(QPixmap(QString::fromUtf8("../data/images/SearchButton.jpg")));
-        label->setScaledContents(true);
-        label->setAlignment(Qt::AlignCenter);
-        widget = new QWidget(centralWidget);
-        widget->setObjectName(QStringLiteral("widget"));
-        widget->setGeometry(QRect(20, 140, 391, 181));
-        ltGoogleEdit = new QHBoxLayout(widget);
-        ltGoogleEdit->setSpacing(6);
-        ltGoogleEdit->setContentsMargins(11, 11, 11, 11);
-        ltGoogleEdit->setObjectName(QStringLiteral("ltGoogleEdit"));
-        ltGoogleEdit->setContentsMargins(0, 0, 0, 0);
-        verticalLayout = new QVBoxLayout();
-        verticalLayout->setSpacing(6);
-        verticalLayout->setObjectName(QStringLiteral("verticalLayout"));
-        edtInputFormula = new QLineEdit(widget);
-        edtInputFormula->setObjectName(QStringLiteral("edtInputFormula"));
-        QSizePolicy sizePolicy1(QSizePolicy::Expanding, QSizePolicy::Minimum);
+        sizePolicy.setHeightForWidth(edtInputFormula->sizePolicy().hasHeightForWidth());
+        edtInputFormula->setSizePolicy(sizePolicy);
+        edtInputFormula->setMinimumSize(QSize(0, 50));
+        edtInputFormula->setMaximumSize(QSize(16777215, 50));
+        QFont font;
+        font.setFamily(QStringLiteral("Comic Sans MS"));
+        font.setPointSize(12);
+        edtInputFormula->setFont(font);
+        edtInputFormula->setStyleSheet(QLatin1String("background-color: rgb(245, 245, 245);\n"
+"border-radius: 18px;\n"
+"padding-left: 10px;\n"
+"padding-right: 10px;\n"
+"padding-top: 8px;"));
+        edtInputFormula->setFrameShape(QFrame::NoFrame);
+        edtInputFormula->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        edtInputFormula->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+        ltGEdit->addWidget(edtInputFormula);
+
+        gviewUnderscore = new QGraphicsView(wdgtGEdit);
+        gviewUnderscore->setObjectName(QStringLiteral("gviewUnderscore"));
+        QSizePolicy sizePolicy1(QSizePolicy::Fixed, QSizePolicy::Fixed);
         sizePolicy1.setHorizontalStretch(0);
         sizePolicy1.setVerticalStretch(0);
-        sizePolicy1.setHeightForWidth(edtInputFormula->sizePolicy().hasHeightForWidth());
-        edtInputFormula->setSizePolicy(sizePolicy1);
-        edtInputFormula->setMinimumSize(QSize(5, 30));
-        edtInputFormula->setCursor(QCursor(Qt::IBeamCursor));
-        edtInputFormula->setStyleSheet(QStringLiteral(""));
+        sizePolicy1.setHeightForWidth(gviewUnderscore->sizePolicy().hasHeightForWidth());
+        gviewUnderscore->setSizePolicy(sizePolicy1);
+        gviewUnderscore->setMinimumSize(QSize(0, 4));
+        gviewUnderscore->setMaximumSize(QSize(16777215, 4));
+        gviewUnderscore->setFocusPolicy(Qt::NoFocus);
+        gviewUnderscore->setContextMenuPolicy(Qt::NoContextMenu);
+        gviewUnderscore->setAcceptDrops(false);
+        gviewUnderscore->setAutoFillBackground(false);
+        gviewUnderscore->setStyleSheet(QStringLiteral("background-color: rgb(102, 102, 255);"));
+        gviewUnderscore->setFrameShape(QFrame::NoFrame);
+        gviewUnderscore->setLineWidth(1);
+        gviewUnderscore->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        gviewUnderscore->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        gviewUnderscore->setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
+        QBrush brush(QColor(102, 102, 255, 255));
+        brush.setStyle(Qt::SolidPattern);
+        gviewUnderscore->setBackgroundBrush(brush);
+        gviewUnderscore->setForegroundBrush(brush);
+        gviewUnderscore->setSceneRect(QRectF(0, 0, 0, 0));
 
-        verticalLayout->addWidget(edtInputFormula);
+        ltGEdit->addWidget(gviewUnderscore);
 
 
-        ltGoogleEdit->addLayout(verticalLayout);
+        ltGEB->addLayout(ltGEdit);
 
-        label_2 = new QLabel(widget);
-        label_2->setObjectName(QStringLiteral("label_2"));
-
-        ltGoogleEdit->addWidget(label_2);
-
+        label = new QLabel(centralWidget);
+        label->setObjectName(QStringLiteral("label"));
+        label->setGeometry(QRect(350, 70, 236, 100));
+        sizePolicy1.setHeightForWidth(label->sizePolicy().hasHeightForWidth());
+        label->setSizePolicy(sizePolicy1);
+        label->setMinimumSize(QSize(236, 100));
+        label->setPixmap(QPixmap(QString::fromUtf8("../data/images/ChemHelper.jpg")));
+        label->setScaledContents(true);
+        label->setAlignment(Qt::AlignCenter);
         ChemHelper->setCentralWidget(centralWidget);
         menuBar = new QMenuBar(ChemHelper);
         menuBar->setObjectName(QStringLiteral("menuBar"));
@@ -129,9 +142,12 @@ public:
     void retranslateUi(QMainWindow *ChemHelper)
     {
         ChemHelper->setWindowTitle(QApplication::translate("ChemHelper", "ChemHelper", nullptr));
+        edtInputFormula->setHtml(QApplication::translate("ChemHelper", "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
+"<html><head><meta name=\"qrichtext\" content=\"1\" /><style type=\"text/css\">\n"
+"p, li { white-space: pre-wrap; }\n"
+"</style></head><body style=\" font-family:'Comic Sans MS'; font-size:12pt; font-weight:400; font-style:normal;\">\n"
+"<p align=\"justify\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\">\320\222\320\260\321\210\320\260 \321\204\320\276\321\200\320\274\321\203\320\273\320\260</p></body></html>", nullptr));
         label->setText(QString());
-        edtInputFormula->setText(QApplication::translate("ChemHelper", "\320\222\320\260\321\210\320\260 \321\204\320\276\321\200\320\274\321\203\320\273\320\260", nullptr));
-        label_2->setText(QApplication::translate("ChemHelper", "TextLabel", nullptr));
         menuHelp->setTitle(QApplication::translate("ChemHelper", "Help", nullptr));
     } // retranslateUi
 

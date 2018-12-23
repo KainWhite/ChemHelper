@@ -2,6 +2,7 @@
 #define CHEMHELPER_H
 
 #include <QMainWindow>
+#include <QTimer>
 
 namespace Ui
 {
@@ -17,13 +18,15 @@ public:
     ~ChemHelper();
 
 protected:
-    bool eventFilter(QObject *watched, QEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event); //override;
 
 private slots:
     void on_btnSearch_clicked();
+    void update();
 
 private:
     Ui::ChemHelper *ui;
+    QTimer *tmrProcessTimig;
 };
 
 #endif // CHEMHELPER_H

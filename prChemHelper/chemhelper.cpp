@@ -2,79 +2,76 @@
 #include <QDesktopWidget>
 #include <QKeyEvent>
 #include <QPainter>
+#include <QGraphicsView>
+#include <QGraphicsScene>
+#include <QFontDatabase>
+#include <QDateTime>
 
 #include "chemhelper.h"
 #include "ui_chemhelper.h"
 #include "ch_variables_and_types.h"
-#include "ch_graphics.h"
+#include "ch_model.h"
 
 using namespace std;
 
-ChemHelper::ChemHelper(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChemHelper)
+ChemHelper::ChemHelper(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChemHelper), tmrProcessTimig(new QTimer)
 {
-    ui->setupUi(this);
     MonitorWidth = QApplication::desktop()->width();
     MonitorHeight = QApplication::desktop()->height();
     HWbtnSearch = min(MonitorWidth, MonitorHeight) / 30;
 
+    ui->setupUi(this);
+
+    tmrProcessTimig->setInterval(15);
+    connect(tmrProcessTimig, SIGNAL(timeout()), this, SLOT(update()));
+    tmrProcessTimig->start();
+
+    ui->gviewUnderscore->setFixedWidth(100);
+
+    ui->ltGEdit->setAlignment(ui->gviewUnderscore, Qt::AlignHCenter);
+
     QString filename = "..\\data\\images\\SearchButton.jpg";
-    QClickableLabel *lblSearchButton = new QClickableLabel;
+    QClickableLabel *lblSearchButton = new QClickableLabel(this);
     lblSearchButton->setAlignment(Qt::AlignCenter);
-    lblSearchButton->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+    lblSearchButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
     lblSearchButton->setFixedSize(HWbtnSearch, HWbtnSearch);
     lblSearchButton->setScaledContents(true);
     lblSearchButton->setCursor(Qt::PointingHandCursor);
+    //lblSearchButton->setGeometry(100, 200, 0, 0);
     connect(lblSearchButton, SIGNAL(clicked()), this, SLOT(on_btnSearch_clicked()));
     QPixmap pix;
     if(pix.load(filename))
-    {
-
-        //pix = pix.scaled(btnSearch->size(),Qt::KeepAspectRatio);
         lblSearchButton->setPixmap(pix);
-        //ui->label->setPixmap(pix);
-    }
-    ui->ltGoogleEdit->addWidget(lblSearchButton);
+    ui->ltGEB->addWidget(lblSearchButton);
 
-    QShape *rctUnderscore = new QShape;
-    QPainter brush(this);
-    rctUnderscore->setHeight(50);
-    rctUnderscore->setWidth(100);
-    rctUnderscore->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-    brush.setPen(Qt::red);
-    brush.drawRect(*rctUnderscore);
-    ui->ltGoogleEdit->addWidget(rctUnderscore);
+    qApp->installEventFilter(this);
 }
 
 ChemHelper::~ChemHelper()
 {
     delete ui;
+    delete tmrProcessTimig;
 }
 
-/*void /*TForm1.tmrProcessTimingTimer()
+void ChemHelper::update()
 {
-    int UTC;
-    int Now;
-    GetSystemTime(UTC);
-    Now = SysTimeToInt(UTC);
-    if (Now - TimeEditAnimationStart > EditAnimationTime && EditAnimationRunning)
-    {
-        EditAnimationRunning = false;
-        SetEditFinishPosition();
-    }
-    if (Now - TimeEditInverseAnimationStart > EditAnimationTime && EditInverseAnimationRunning)
-    {
-        EditInverseAnimationRunning = false;
-        SetEditStartPosition();
-    }
-    if (Now - TimeAllAnimationStart > AllAnimationTime && AllAnimationRunning)
-        AllAnimationRunning = false;
-    if (Now - TimeAllInverseAnimationStart > AllAnimationTime && AllInverseAnimationRunning)
-        AllInverseAnimationRunning = false;
-    Redraw();
+    SYSTEMTIME UTC;
+    GetSystemTime(&UTC);
+    long long now = sysTimeToInt(UTC);
+    if (now - TimeGEditAnimationStart > GEditAnimationTime && GEditAnimationRunning)
+        gEditAnimationFinished();
+    if (now - TimeGEditInverseAnimationStart > GEditAnimationTime && GEditInverseAnimationRunning)
+        gEditInverseAnimationFinished();
+    if (now - TimeAllAnimationStart > AllAnimationTime && AllAnimationRunning)
+        allAnimationFinished();
+    if (now - TimeAllInverseAnimationStart > AllAnimationTime && AllInverseAnimationRunning)
+        allInverseAnimationFinished();
+    if(GEditAnimationRunning || GEditInverseAnimationRunning || AllAnimationRunning || AllInverseAnimationRunning)
+        needRedraw();
 }
 
 
-void /*TForm1.FormCreate()
+/*void TForm1.FormCreate()
 {
     //HideCaret(edtInputFormula.Handle);
     InitializeVariables();
@@ -116,7 +113,6 @@ int sendRequest(string inputFormula)
     }
     FillSGResults(edtInputFormula.Text);
     LaunchAllAnimation();*/
-    for(long long i = 0; i < 1000000000; i++);
 }
 /*
 void /*TForm1.edtInputFormulaKeyPress()
@@ -170,7 +166,8 @@ void /*TForm1.imgSearchButtonClick()
 
 void ChemHelper::on_btnSearch_clicked()
 {
-    sendRequest(ui->edtInputFormula->text().toStdString());
+    if(isValidChemical)
+        sendRequest(ui->edtInputFormula->toPlainText().toStdString());
 }
 
 bool ChemHelper::eventFilter(QObject *watched, QEvent *event)
@@ -181,32 +178,33 @@ bool ChemHelper::eventFilter(QObject *watched, QEvent *event)
         {
         case QEvent::KeyPress :
         {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-            switch(keyEvent->key())
+            int key = (static_cast<QKeyEvent*>(event))->key();
+            //cout<<key<<endl;
+            if(key == 13) // enter
             {
-            case 13:
-                if(sendRequest(ui->edtInputFormula->text().toStdString()))
-                {
-
-                }
-                break;
-            case 27:
-                if (ui->edtInputFormula->text() == "")
-                    ui->edtInputFormula->setText("Ваша формула");
-                LaunchEditInverseAnimation;
-                break;
+                //processRequest(ui->edtInputFormula->toPlainText().toStdString());
+                gEditFocusOut(*(ui->edtInputFormula));
             }
-
+            if(key == 27) //esc
+                QCoreApplication::postEvent(watched, new QEvent(QEvent::FocusOut));
+            if(key >= 48 && key <= 57) //numbers
+                ui->edtInputFormula->setCurrentFont(QFont("Comic Sans MS", 6));
+            if((key >= 65 && key <= 90) || //letters
+                    (key >= 33 && key <= 42 && key != 34 && key != 39) || key == 64 || key == 94) //numbers with shift
+                ui->edtInputFormula->setCurrentFont(QFont("Comic Sans MS", 12));
             break;
         }
         case QEvent::FocusIn:
         {
+            gEditFocusIn(*(ui->edtInputFormula));
             break;
         }
         case QEvent::FocusOut:
         {
+            gEditFocusOut(*(ui->edtInputFormula));
             break;
         }
         }
     }
+    return QObject::eventFilter(watched, event);
 }
