@@ -3,16 +3,14 @@
 
 #include <QGraphicsView>
 #include <QLabel>
+#include <QLayout>
+#include <QTableWidget>
 
-void launchGEditAnimation();
-void launchGEditInverseAnimation();
-void launchAllAnimation();
-void launchAllInverseAnimation();
 void setGEditFinishPosition(QGraphicsView &Underscore);
 void setGEditStartPosition(QGraphicsView &Underscore);
-void setAllFinishPosition(QWidget &GEdit, QLabel &Logo);
-void setAllStartPosition(QWidget &GEdit, QLabel &Logo);
-void redraw(QWidget &GEdit, QGraphicsView &Underscore, QLabel &Logo);
+void setAllFinishPosition(QWidget &GEdit, QLabel &Logo, QTableWidget &SearchResults);
+void setAllStartPosition(QWidget &GEdit, QLabel &Logo, QTableWidget &SearchResults);
+void redraw(QWidget &GEdit, QGraphicsView &Underscore, QLabel &Logo, QTableWidget &SearchResults);
 //void showMessageInvalidInputFormula();
 
 

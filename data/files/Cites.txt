@@ -1,4 +1,4 @@
-site:wikipedia.org%20
+site:wikipedia.com%20
 site:pubchem.ncbi.hml.nih.gov%20
 site:dipc.ehu.es%20
 site:solverbook.com%20

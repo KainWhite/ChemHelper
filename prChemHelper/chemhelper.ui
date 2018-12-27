@@ -6,15 +6,31 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>965</width>
-    <height>577</height>
+    <width>1000</width>
+    <height>600</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>1000</width>
+    <height>600</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>1000</width>
+    <height>600</height>
+   </size>
   </property>
   <property name="cursor">
    <cursorShape>ArrowCursor</cursorShape>
   </property>
   <property name="windowTitle">
    <string>ChemHelper</string>
+  </property>
+  <property name="windowIcon">
+   <iconset>
+    <normaloff>../data/images/Icon64.ico</normaloff>../data/images/Icon64.ico</iconset>
   </property>
   <property name="windowOpacity">
    <double>1.000000000000000</double>
@@ -35,7 +51,7 @@
       <x>270</x>
       <y>240</y>
       <width>404</width>
-      <height>58</height>
+      <height>78</height>
      </rect>
     </property>
     <layout class="QHBoxLayout" name="ltGEB">
@@ -56,20 +72,20 @@
        <item>
         <widget class="QTextEdit" name="edtInputFormula">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
          <property name="minimumSize">
           <size>
-           <width>0</width>
+           <width>380</width>
            <height>50</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
+           <width>380</width>
            <height>50</height>
           </size>
          </property>
@@ -81,8 +97,8 @@
          </property>
          <property name="styleSheet">
           <string notr="true">background-color: rgb(245, 245, 245);
-border-radius: 18px;
-padding-left: 10px;
+border-radius: 20px;
+padding-left: 12px;
 padding-right: 10px;
 padding-top: 8px;</string>
          </property>
@@ -120,7 +136,7 @@ p, li { white-space: pre-wrap; }
          </property>
          <property name="maximumSize">
           <size>
-           <width>16777215</width>
+           <width>380</width>
            <height>4</height>
           </size>
          </property>
@@ -137,7 +153,7 @@ p, li { white-space: pre-wrap; }
           <bool>false</bool>
          </property>
          <property name="styleSheet">
-          <string notr="true">background-color: rgb(102, 102, 255);</string>
+          <string notr="true"/>
          </property>
          <property name="frameShape">
           <enum>QFrame::NoFrame</enum>
@@ -157,18 +173,18 @@ p, li { white-space: pre-wrap; }
          <property name="backgroundBrush">
           <brush brushstyle="SolidPattern">
            <color alpha="255">
-            <red>102</red>
-            <green>102</green>
-            <blue>255</blue>
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
            </color>
           </brush>
          </property>
          <property name="foregroundBrush">
-          <brush brushstyle="SolidPattern">
+          <brush brushstyle="NoBrush">
            <color alpha="255">
-            <red>102</red>
-            <green>102</green>
-            <blue>255</blue>
+            <red>85</red>
+            <green>255</green>
+            <blue>127</blue>
            </color>
           </brush>
          </property>
@@ -220,22 +236,94 @@ p, li { white-space: pre-wrap; }
      <set>Qt::AlignCenter</set>
     </property>
    </widget>
+   <widget class="QTableWidget" name="twSearchResults">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>330</y>
+      <width>900</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>0</height>
+     </size>
+    </property>
+    <property name="maximumSize">
+     <size>
+      <width>16777215</width>
+      <height>16777215</height>
+     </size>
+    </property>
+    <property name="font">
+     <font>
+      <family>Comic Sans MS</family>
+      <pointsize>12</pointsize>
+      <underline>true</underline>
+     </font>
+    </property>
+    <property name="cursor" stdset="0">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(245, 245, 245);
+border-radius: 20px;
+padding-left: 15px;
+padding-right: 15px;
+padding-top: 8px;
+color: rgb(89, 147, 255)</string>
+    </property>
+    <property name="horizontalScrollBarPolicy">
+     <enum>Qt::ScrollBarAlwaysOff</enum>
+    </property>
+    <property name="showGrid">
+     <bool>false</bool>
+    </property>
+    <property name="gridStyle">
+     <enum>Qt::NoPen</enum>
+    </property>
+    <property name="cornerButtonEnabled">
+     <bool>false</bool>
+    </property>
+    <property name="rowCount">
+     <number>0</number>
+    </property>
+    <property name="columnCount">
+     <number>2</number>
+    </property>
+    <attribute name="horizontalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+    <attribute name="verticalHeaderVisible">
+     <bool>false</bool>
+    </attribute>
+    <column/>
+    <column/>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>965</width>
+     <width>1000</width>
      <height>26</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuHelp">
-    <property name="title">
-     <string>Help</string>
-    </property>
-   </widget>
-   <addaction name="menuHelp"/>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

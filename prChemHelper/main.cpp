@@ -1,6 +1,4 @@
 #include <QApplication>
-#include <QGraphicsView>
-#include <QGraphicsScene>
 
 #include "chemhelper.h"
 

@@ -1,11 +1,10 @@
 #include <iostream>
 #include <QDesktopWidget>
 #include <QKeyEvent>
-#include <QPainter>
 #include <QGraphicsView>
 #include <QGraphicsScene>
-#include <QFontDatabase>
-#include <QDateTime>
+#include <cmath>
+#include <windows.h>
 
 #include "chemhelper.h"
 #include "ui_chemhelper.h"
@@ -14,11 +13,11 @@
 
 using namespace std;
 
-ChemHelper::ChemHelper(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChemHelper), tmrProcessTimig(new QTimer)
+ChemHelper::ChemHelper(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChemHelper), tmrProcessTimig(new QTimer), nam(new QNetworkAccessManager)
 {
     MonitorWidth = QApplication::desktop()->width();
     MonitorHeight = QApplication::desktop()->height();
-    HWbtnSearch = min(MonitorWidth, MonitorHeight) / 30;
+    btnSearchWidth = min(MonitorWidth, MonitorHeight) / 30;
 
     ui->setupUi(this);
 
@@ -26,7 +25,8 @@ ChemHelper::ChemHelper(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChemHe
     connect(tmrProcessTimig, SIGNAL(timeout()), this, SLOT(update()));
     tmrProcessTimig->start();
 
-    ui->gviewUnderscore->setFixedWidth(100);
+    ui->gviewUnderscore->setScene(new QGraphicsScene);
+    ui->gviewUnderscore->setBackgroundBrush(QBrush(UnderscoreCorrectColor, Qt::SolidPattern));
 
     ui->ltGEdit->setAlignment(ui->gviewUnderscore, Qt::AlignHCenter);
 
@@ -34,7 +34,7 @@ ChemHelper::ChemHelper(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChemHe
     QClickableLabel *lblSearchButton = new QClickableLabel(this);
     lblSearchButton->setAlignment(Qt::AlignCenter);
     lblSearchButton->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
-    lblSearchButton->setFixedSize(HWbtnSearch, HWbtnSearch);
+    lblSearchButton->setFixedSize(btnSearchWidth, btnSearchWidth);
     lblSearchButton->setScaledContents(true);
     lblSearchButton->setCursor(Qt::PointingHandCursor);
     //lblSearchButton->setGeometry(100, 200, 0, 0);
@@ -44,7 +44,11 @@ ChemHelper::ChemHelper(QWidget *parent) : QMainWindow(parent), ui(new Ui::ChemHe
         lblSearchButton->setPixmap(pix);
     ui->ltGEB->addWidget(lblSearchButton);
 
+    ui->twSearchResults->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
     qApp->installEventFilter(this);
+    initializeVariables(*(ui->GEdit), *(ui->gviewUnderscore), *(ui->lblLogo), *(ui->twSearchResults));
+    ui->edtInputFormula->clearFocus();
 }
 
 ChemHelper::~ChemHelper()
@@ -58,116 +62,212 @@ void ChemHelper::update()
     SYSTEMTIME UTC;
     GetSystemTime(&UTC);
     long long now = sysTimeToInt(UTC);
+    sysTimeToInt(UTC);
     if (now - TimeGEditAnimationStart > GEditAnimationTime && GEditAnimationRunning)
-        gEditAnimationFinished();
+        gEditAnimationFinished(*(ui->gviewUnderscore));
     if (now - TimeGEditInverseAnimationStart > GEditAnimationTime && GEditInverseAnimationRunning)
-        gEditInverseAnimationFinished();
+        gEditInverseAnimationFinished(*(ui->gviewUnderscore));
     if (now - TimeAllAnimationStart > AllAnimationTime && AllAnimationRunning)
-        allAnimationFinished();
+        allAnimationFinished(*(ui->GEdit), *(ui->lblLogo), *(ui->twSearchResults));
     if (now - TimeAllInverseAnimationStart > AllAnimationTime && AllInverseAnimationRunning)
-        allInverseAnimationFinished();
+        allInverseAnimationFinished(*(ui->GEdit), *(ui->lblLogo), *(ui->twSearchResults));
     if(GEditAnimationRunning || GEditInverseAnimationRunning || AllAnimationRunning || AllInverseAnimationRunning)
-        needRedraw();
+        needRedraw(*(ui->GEdit), *(ui->gviewUnderscore), *(ui->lblLogo), *(ui->twSearchResults));
 }
 
-
-/*void TForm1.FormCreate()
+wstring vectorWStringToWString(const vector<wstring> &src)
 {
-    //HideCaret(edtInputFormula.Handle);
-    InitializeVariables();
-    //open elements in ElementList
+    wstring result = L"";
+    for(int i = 0; i < src.size(); i++)
+        result.append(src[i]);
+    return result;
 }
 
-void /*TForm1.edtInputFormulaClick()
+void ChemHelper::fillTWSearchResults(const std::wstring &HTMLCode)
 {
-    int UTC;
-    if (edtInputFormula.Text == "Ваша формула")
-        edtInputFormula.Text = "";
-    LaunchEditAnimation();
-}
-
-void /*TForm1.edtInputFormulaExit()
-{
-    int UTC;
-    imgInvalidFormula.Visible = False;
-    if (edtInputFormula.Text == "")
-        edtInputFormula.Text = "Ваша формула";
-    LaunchEditInverseAnimation;
-}
-*/
-int sendRequest(string inputFormula)
-{
-    //strngrdSearchResults.RowCount = 0;
-    /*InputFormula = Normallize(InputFormula);
-    if (!IsValidChemical(InputFormula) && AnsiPos(InputFormula, ExceptionList) == 0)
+    int i = 0;
+    bool divgOpened = false, h3Opened = false, aOpened = false, citeOpened = false;
+    int countDivOpened = 0;
+    vector<wstring> titles, URLs;
+    while (i < HTMLCode.size())
     {
-        //ShowMessageInvalidInputFormula;
-        shpLine.Pen.Color = RGB(255, 50, 50);
-        shpLine.Brush.Color = RGB(255, 50, 50);
-        return;
+        //wcout<<HTMLCode[i]<<endl;
+        //ShowMessage(IntToStr(i) + backNSymbols(i, 6, HTMLCode));
+        if (divgOpened && forwardNSymbols(i, 6, HTMLCode) == L"</div>" && countDivOpened == 1)
+        {
+            divgOpened = false;
+            countDivOpened--;
+        }
+        if (countDivOpened > 0 && forwardNSymbols(i, 6, HTMLCode) == L"</div>")
+            countDivOpened--;
+
+            if (citeOpened && HTMLCode[i] == '<')
+            {
+                if (forwardNSymbols(i, 7, HTMLCode) == L"</cite>")
+                    citeOpened = false;
+                else
+                {
+                    shiftUntilX(i, '>', HTMLCode);
+                    i++;
+                }
+            }
+
+                if (citeOpened)
+                {
+                    URLs.push_back(shiftUntilX(i, '<', HTMLCode));
+                    i--;
+                }
+
+            if (divgOpened && backNSymbols(i, 5, HTMLCode) == L"<cite")
+            {
+                shiftUntilX(i, '>', HTMLCode);
+                citeOpened = true;
+            }
+            if (aOpened && forwardNSymbols(i, 4, HTMLCode) == L"</a>")
+                aOpened = false;
+
+                if (h3Opened && HTMLCode[i] == '<')
+                {
+                    if (forwardNSymbols(i, 5, HTMLCode) == L"</h3>")
+                        h3Opened = false;
+                    else
+                    {
+                        shiftUntilX(i, '>', HTMLCode);
+                        i++;
+                    }
+                }
+
+                    if (h3Opened)
+                    {
+                        titles.push_back(shiftUntilX(i, '<', HTMLCode));
+                        if ( titles.back().size() > 30 )
+                        {
+                            titles.back().erase(30, titles.size() - 30);
+                            titles.back() += L"...";
+                            aOpened = false;
+                        }
+                        i--;
+                    }
+
+                if (aOpened && backNSymbols(i, 3, HTMLCode) == L"<h3")
+                {
+                    shiftUntilX(i, '>', HTMLCode);
+                    h3Opened = true;
+                }
+
+            if (divgOpened && backNSymbols(i, 2, HTMLCode) == L"<a")
+            {
+                shiftUntilX(i, '>', HTMLCode);
+                aOpened = true;
+            }
+
+        if (countDivOpened > 0 && backNSymbols(i, 4, HTMLCode) == L"<div")
+            countDivOpened++;
+        if (backNSymbols(i, 14, HTMLCode) == L"<div class=\"g\"")
+        {
+            //cout<<"kek"<<endl;
+            shiftUntilX( i, '>', HTMLCode );
+            divgOpened = true;
+            countDivOpened = 1;
+        }
+        i++;
     }
-    if (!CanAccessInternet)
+    /*for(int i = 0; i < titles.size(); i++)
     {
-        ShowMessage("Нет соединения с интернетом.");
-        return;
-    }
-    FillSGResults(edtInputFormula.Text);
-    LaunchAllAnimation();*/
-}
-/*
-void /*TForm1.edtInputFormulaKeyPress()
-{
-    TRect R;
-    string CurrentInputFormula;
-    set<char> AllowedKeys = ['0'..'9', 'a'..'z', 'A'..'Z', '(', ')', '[', ']', ' ', '*', #127, #8];
-    WasChangedInputFormula = True;
-    if (Key == #13)
-        SendRequest(edtInputFormula.Text);
-    imgInvalidFormula.Visible = False;
-    if (AllowedKeys.find(Key) == AllowedKeys.size())
+        wcout << QString::fromStdWString(titles[i]).toStdWString() << L" " << URLs[i] << endl;
+    }*/
+    for (int i = 0; i < titles.size(); i++)
     {
-        Key = #0;
-        WasChangedInputFormula = False;
+        ui->twSearchResults->insertRow(ui->twSearchResults->rowCount());
+        ui->twSearchResults->setRowHeight(ui->twSearchResults->rowCount() - 1, 50);
+        //titles[i] = L"ывамыфывфыdfsdfvsdfваьидла";
+        //titles[i] = QString::fromStdWString(titles[i]).toStdWString();
+        QTableWidgetItem *x = new QTableWidgetItem(QString::fromStdWString(titles[i]));
+        //wcout << x->text().toStdWString() << endl;
+        ui->twSearchResults->setItem(ui->twSearchResults->rowCount() - 1, 0, x);
+        if (forwardNSymbols(0, 4, URLs[i]) == L"http")
+            ui->twSearchResults->setItem(ui->twSearchResults->rowCount() - 1, 1, new QTableWidgetItem(QString::fromStdWString(URLs[i])));
+        else
+            ui->twSearchResults->setItem(ui->twSearchResults->rowCount() - 1, 1, new QTableWidgetItem(QString::fromStdWString(L"http://" + URLs[i])));
     }
-    if (WasChangedInputFormula)
+}
+
+void ChemHelper::searchFinished()
+{
+    wstring HTML(reply->readAll().toStdString().begin(), reply->readAll().toStdString().end());
+    wcout<<HTML<<endl;
+    fillTWSearchResults(HTML);
+}
+
+void ChemHelper::sendRequest(const string &inputFormula)
+{
+    ui->twSearchResults->clear();
+    ui->twSearchResults->setRowCount(0);
+    /*for(int i = 0; i < CiteArray.size(); i++)
+    {                                                                                                     CHANGE TO I
+        reply = nam->get(QNetworkRequest(QUrl(QString::fromStdString("https://www.google.com/search?q=" + CiteArray[0] + inputFormula))));
+    }
+    QObject::connect(reply, SIGNAL(finished()), this, SLOT(searchFinished()));*/
+    //cout<<inputFormula<<endl;
+    long long cnt = 0;
+    for(long long i = 0; i < 3500000000; i++)
     {
-        shpLine.Pen.Color = RGB(102, 102, 255);
-        shpLine.Brush.Color = RGB(102, 102, 255);
+        cnt+=i;
     }
-    /*if (IsNumber(Key)) and (Last(edtInputFormula.Text) <> 'x') and (Last(edtInputFormula.Text) <> 'X') and
-                (Last(edtInputFormula.Text) <> '*') and (Last(edtInputFormula.Text) <> ' ')  then
-                edtInputFormula.Font.Height := 10
-            else
-            edtInputFormula.Font.Height := 20;
-}
-
-void /*TForm1.FormPaint()
-{
-    if (WasJustCreated)
+    cout<<cnt<<endl;
+    if(inputFormula == "H2O")
     {
-        Form1.FocusControl(NULL);
-        WasJustCreated = False;
+        //cout<<"kek"<<endl;
+        //wcout<<vectorWStringToWString(HTMLH2O)<<endl;
+        fillTWSearchResults(vectorWStringToWString(HTMLH2O));
     }
+    if(inputFormula == "HCl")
+    {
+        fillTWSearchResults(vectorWStringToWString(HTMLHCl));
+    }
+    if(inputFormula == "Al2(SO4)3")
+    {
+        fillTWSearchResults(vectorWStringToWString(HTMLAl2SO43));
+    }
+    //SrchResFinishHeight = min(SrchResFinishHeight, ui->twSearchResults->rowCount() * 50 + 20);
+    launchAllAnimation();
 }
-
-void /*TForm1.strngrdSearchResultsSelectCell()
-{
-    ShellExecute(Handle, 'open', PAnsiChar(strngrdSearchResults.Cells[1, ARow]), NULL, NULL, SW_HIDE);
-    //CanSelect := False;
-}
-
-void /*TForm1.imgSearchButtonClick()
-{
-    //TForm1.edtInputFormulaExit(Sender);
-    SendRequest(edtInputFormula.Text);
-}*/
-
-
 
 void ChemHelper::on_btnSearch_clicked()
 {
-    if(isValidChemical)
-        sendRequest(ui->edtInputFormula->toPlainText().toStdString());
+    if(isValidChemical(ui->edtInputFormula->toPlainText().toStdString()))
+    {
+        ui->edtInputFormula->clearFocus();
+        //cout<<ui->edtInputFormula->toPlainText().toStdString()<<endl;
+        sendRequest(normallize(ui->edtInputFormula->toPlainText().toStdString()));
+    }
+    else
+    {
+        ui->gviewUnderscore->setBackgroundBrush(QBrush(UnderscoreWrongColor, Qt::SolidPattern));
+        WasGEditAnimation = false;
+        launchGEditAnimation();
+        WasChangedInputFormula = false;
+    }
+}
+
+bool isValidKey(int key)
+{
+    /*
+     * 16777220 - enter
+     * 16777216 - esc
+     * 16777219 - backspase
+     * 16777223 - del
+     * 16777(234, 235, 236, 237) - arrows (l, u, r, d)
+     * 40 .. 43 - '(', ')', '*', '+'
+     * 61 - '='
+     * 32 - ' '
+     * 91 - '['
+     * 93 - ']'
+    */
+    return (isKNumber(key) || isKLetter(key) ||
+            key == 16777220 || key == 16777216 || key == 16777219 || key == 16777223 ||
+            key == 16777234 || key == 16777235 || key == 16777236 || key == 16777237 ||
+            (key >= 40 && key <= 43) || key == 61 || key == 32 || key == 91 || key == 93);
 }
 
 bool ChemHelper::eventFilter(QObject *watched, QEvent *event)
@@ -180,17 +280,23 @@ bool ChemHelper::eventFilter(QObject *watched, QEvent *event)
         {
             int key = (static_cast<QKeyEvent*>(event))->key();
             //cout<<key<<endl;
-            if(key == 13) // enter
+            if(!isValidKey(key))
+                return true;
+            if(key == 16777220) // enter
             {
-                //processRequest(ui->edtInputFormula->toPlainText().toStdString());
-                gEditFocusOut(*(ui->edtInputFormula));
+                emit(on_btnSearch_clicked());
+                return true;
             }
-            if(key == 27) //esc
+            if(key == 16777216) //esc
                 QCoreApplication::postEvent(watched, new QEvent(QEvent::FocusOut));
-            if(key >= 48 && key <= 57) //numbers
+            else
+            {
+                ui->gviewUnderscore->setBackgroundBrush(QBrush(UnderscoreCorrectColor, Qt::SolidPattern));
+                needRedraw(*(ui->GEdit), *(ui->gviewUnderscore), *(ui->lblLogo), *(ui->twSearchResults));
+            }
+            if(isKNumber(key))
                 ui->edtInputFormula->setCurrentFont(QFont("Comic Sans MS", 6));
-            if((key >= 65 && key <= 90) || //letters
-                    (key >= 33 && key <= 42 && key != 34 && key != 39) || key == 64 || key == 94) //numbers with shift
+            if(isKLetter(key) || (key >= 40 && key <= 43) || key == 61 || key == 32 || key == 91 || key == 93)
                 ui->edtInputFormula->setCurrentFont(QFont("Comic Sans MS", 12));
             break;
         }
@@ -202,9 +308,17 @@ bool ChemHelper::eventFilter(QObject *watched, QEvent *event)
         case QEvent::FocusOut:
         {
             gEditFocusOut(*(ui->edtInputFormula));
+            ui->edtInputFormula->clearFocus();
             break;
         }
         }
     }
     return QObject::eventFilter(watched, event);
+}
+
+void ChemHelper::on_twSearchResults_cellClicked(int row, int column)
+{
+    const char *url = ui->twSearchResults->item(row, 1)->text().toUtf8();
+    const char *open = "open";
+    ShellExecuteA(NULL, open, url ,  NULL,  NULL, SW_HIDE);
 }

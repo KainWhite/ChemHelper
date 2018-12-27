@@ -6,15 +6,16 @@
 
 using namespace std;
 
-int PrevTime = 0;
-int TimeGEditAnimationStart = 0;
-int TimeGEditInverseAnimationStart = 0;
-int TimeAllAnimationStart = 0;
-int TimeAllInverseAnimationStart = 0;
+const position GEditStartPosition(277, 271), GEditFinishPosition(100, 50);
+const position LogoStartPosition(382, 70), LogoFinishPosition(632, 20);
+const position SrchResStartPosition(100, 140);
 
-position GEditStartPosition, GEditFinishPosition;
-position LogoStartPosition, LogoFinishPosition;
-position SGBottomStartPosition, SGBottomFinishPosition;
+int MonitorHeight;
+int MonitorWidth;
+const int EdtInputFormulaWidth = 380, EdtInputFormulaHeight = 50;
+const int SrchResWidth = 800, SrchResStartHeight = 0;
+int SrchResFinishHeight = 420;
+int btnSearchWidth;
 
 bool GEditAnimationRunning = false;
 bool GEditInverseAnimationRunning = false;
@@ -29,22 +30,27 @@ vector<chemElement> ElementList;
 string ExceptionList;
 string PathToBrowser;
 vector<string> CiteArray;
+std::vector<std::wstring> HTMLH2O;
+std::vector<std::wstring> HTMLHCl;
+std::vector<std::wstring> HTMLAl2SO43;
 
-const double CurrentAccelerationCoefficient = 0.0, CurrentSpeed = 0.0;
-const double GEditLeftAcceleration = 0.0, GEditTopAcceleration = 0.0;
-const double SGAcceleration = 0.0;
-const double GEditLineAcceleration = 0.0;
-const double LogoLeftAcceleration = 0.0, LogoTopAcceleration = 0.0;
+int PrevTime = 0;
+int TimeGEditAnimationStart = 0;
+int TimeGEditInverseAnimationStart = 0;
+int TimeAllAnimationStart = 0;
+int TimeAllInverseAnimationStart = 0;
+
 const int GEditAnimationTime = 300;
-const int AllAnimationTime = 500;
+const int AllAnimationTime = 1000;
 const double StartAcceleration = 1;
 const int StartSpeed = 0;
-
-int MonitorHeight;
-int MonitorWidth;
-const int EdtInputFormulaWidth = 380;
-
-int HWbtnSearch;
+const double CurrentAccelerationCoefficient = 0.0, CurrentSpeed = 0.0;
+const double GEditLeftAcceleration = 4.0 * (GEditFinishPosition.left - GEditStartPosition.left) / sqr(AllAnimationTime),
+             GEditTopAcceleration = 4.0 * (GEditFinishPosition.top - GEditStartPosition.top) / sqr(AllAnimationTime);
+const double SGAcceleration = 4.0 * (SrchResFinishHeight - SrchResStartHeight) / sqr(AllAnimationTime);
+const double GEditUnderscoreAcceleration = 2.0 * EdtInputFormulaWidth / sqr(GEditAnimationTime);
+const double LogoLeftAcceleration = 4.0 * (LogoFinishPosition.left - LogoStartPosition.left) / sqr(AllAnimationTime),
+             LogoTopAcceleration = 4.0 * (LogoFinishPosition.top - LogoStartPosition.top) / sqr(AllAnimationTime);
 
 const QColor UnderscoreCorrectColor(102, 102, 255);
 const QColor UnderscoreWrongColor(255, 20, 20);
@@ -59,7 +65,6 @@ void skipSpaces (string someStr, int &i)
         i++;
 }
 
-
 string readUntilSpace(string someLine, int &i)
 {
     string Result;
@@ -73,11 +78,12 @@ string readUntilSpace(string someLine, int &i)
     return Result;
 }
 
-
 vector<chemElement> getChemElementArrayFromFile(string path)
 {
     vector<chemElement> result;
     ifstream fin(path.c_str());
+    if(!fin.is_open())
+        cout<<"Not opened "<<path<<endl;
     string formula, degreeOfOxidation, name;
     while (fin >> formula >> degreeOfOxidation >> name)
     {
@@ -87,11 +93,12 @@ vector<chemElement> getChemElementArrayFromFile(string path)
     return result;
 }
 
-
 vector<string> getStringArrayFromFile(string path)
 {
     vector<string> result;
     ifstream fin(path.c_str());
+    if(!fin.is_open())
+        cout<<"Not opened "<<path<<endl;
     string line;
     while(getline(fin, line))
     {
@@ -101,83 +108,49 @@ vector<string> getStringArrayFromFile(string path)
     return result;
 }
 
-
-string GetStringFromFile(string path)
+vector<wstring> getWStringArrayFromFile(string path)
 {
-  string result;
-  ifstream fin(path.c_str());
-  fin >> result;
-  fin.close();
-  return result;
+    vector<wstring> result;
+    wifstream fin(path.c_str());
+    if(!fin.is_open())
+        cout<<"Not opened "<<path<<endl;
+    wstring line;
+    while(getline(fin, line))
+    {
+        result.push_back(line);
+    }
+    fin.close();
+    return result;
 }
 
-
-/*void initializeVariables( )
+string getStringFromFile(string path)
 {
-  /*# with Form1.edtInputFormula do
-  {
-    Width = Min( 300, Form1.Width / 2 );
-    Left = ( Form1.Width - Width ) / 2;
-    Font.Height = 20;
-    Font.Name = "Calibri";
-  }
-  /*# with Form1.shpLine do
-  {
-    Shape = stRectangle;
-    Height = 3;
-    Width = 10;
-    Left = Form1.edtInputFormula.Left + Form1.edtInputFormula.Width / 2;
-    Top = Form1.edtInputFormula.Top + Form1.edtInputFormula.Height;
-    Pen.Color = RGB( 102, 102, 255 );
-    Brush.Color = RGB( 102, 102, 255 );
-  }
-  /*# with Form1.strngrdSearchResults do
-  {
-    Top = Form1.Height / 2 - Form1.Height / 6;
-    Left = Form1.Width / 10;
-    Width = Form1.Width / 2;
-    ColCount = 2;
-    RowCount = 0;
-    DefaultColWidth = Width / 2 - 5;
-    DefaultRowHeight = 25;
-    Font.Height = 20;
-    Height = 0;
-  }
-  /*# with Form1.imgHeader do
-  {
-    Left = ( Form1.Width - Width ) / 2;
-  }
-  /*# with Form1.imgSearchButton do
-  {
-    Left = Form1.edtInputFormula.Left + Form1.edtInputFormula.Width + 10;
-    Top = Form1.edtInputFormula.Top;
-    Width = Form1.edtInputFormula.Height;
-    Height = Form1.edtInputFormula.Height;
-  }
-  EditStartPosition = GetObjectPosition( Form1.edtInputFormula );
-  EditFinishPosition = GetSomePosition( Form1.Width / 10, Form1.Height / 8 );
-  SGBottomStartPosition = GetObjectPosition( Form1.strngrdSearchResults );
-  SGBottomFinishPosition = GetSomePosition( SGBottomStartPosition->Left, Form1.Height - 40 );
-  ImageStartPosition = GetObjectPosition( Form1.imgHeader );
-  ImageFinishPosition = GetSomePosition( 3 * Form1.Width / 4 - Form1.imgHeader.Width / 2, Form1.imgHeader.Top );
-  EditLeftAcceleration = double( 4 ) * ( EditFinishPosition->Left - EditStartPosition->Left ) / Sqr( AllAnimationTime );
-  EditTopAcceleration = double( 4 ) * ( EditFinishPosition->Top - EditStartPosition->Top ) / Sqr( AllAnimationTime );
-  SGAcceleration = double( 4 ) * ( SGBottomFinishPosition->Top - SGBottomStartPosition->Top ) / Sqr( AllAnimationTime );
-  EditLineAcceleration = double( 2 ) * Form1.edtInputFormula.Width / Sqr( EditAnimationTime );
-  ImageLeftAcceleration = double( 4 ) * ( ImageFinishPosition->Left - ImageStartPosition->Left ) / Sqr( AllAnimationTime );
-  ImageTopAcceleration = double( 4 ) * ( ImageFinishPosition->Top - ImageStartPosition->Top ) / Sqr( AllAnimationTime );
-  ElementList = GetElementArrayFromFile( "Data\\files\\Elements.txt" );
-  ExceptionList = GetStringFromFile( "Data\\files\\ExceptionList.txt" );
-  PathToBrowser = GetStringFromFile( "Data\\files\\PathToBrowser.txt" );
-  CiteArray = GetStringArrayFromFile( "Data\\files\\Cites.txt" );
-}*/
+    string result;
+    ifstream fin(path.c_str());
+    if(!fin.is_open())
+        cout<<"Not opened "<<path<<endl;
+    fin >> result;
+    fin.close();
+    return result;
+}
+
+wstring getWStringFromFile(string path)
+{
+    wstring result;
+    wifstream fin(path.c_str());
+    if(!fin.is_open())
+        cout<<"Not opened "<<path<<endl;
+    fin >> result;
+    fin.close();
+    return result;
+}
 
 wstring stringToWString(string str)
 {
     return wstring(str.begin(), str.end());
 }
 
-int SysTimeToInt(SYSTEMTIME x)
+int sysTimeToInt(SYSTEMTIME x)
 {
     return ((x.wHour * 60 + x.wMinute) * 60 + x.wSecond) * 1000 + x.wMilliseconds;
 }
@@ -185,4 +158,42 @@ int SysTimeToInt(SYSTEMTIME x)
 int sqr(int a)
 {
     return a * a;
+}
+
+bool isKNumber(int code)
+{
+    return (code >= 48 && code <= 57);
+}
+bool isKLetter(int code)
+{
+    return (code >= 65 && code <= 90);
+}
+
+std::wstring backNSymbols( int i, int n, const std::wstring &someStr)
+{
+    std::wstring result(L"");
+    int start = i - n + 1, finish = i;
+    if (start >= 0)
+        for (int i = start; i <= finish; i++)
+            result.push_back(someStr[i]);
+    return result;
+}
+std::wstring forwardNSymbols(int i, int n, const std::wstring &someStr)
+{
+    std::wstring result = L"";
+    int start = i, finish = i + n - 1;
+    if (finish < someStr.size())
+        for (i = start; i <= finish; i++)
+            result.push_back(someStr[i]);
+    return result;
+}
+std::wstring shiftUntilX(int& i, char x, const std::wstring &someStr)
+{
+    std::wstring result = L"";
+    while (i < someStr.size() && someStr[i] != x)
+    {
+        result.push_back(someStr[i]);
+        i++;
+    }
+    return result;
 }
